@@ -53,7 +53,8 @@ void print_snake(int y_coord, int x_coord, struct Node **snake_body, int *snake_
 }
 
 // Ian 
-// Make a new trophy, ensure that it is not on top of the snake
+// Make a "new" trophy (same Node, different data)
+// Ensure that it is not on top of the snake
 void make_new_trophy(int lines, int cols, struct Node **trophy, struct Node **snake_body){
     bool trophy_on_snake = false;
     do {
@@ -102,6 +103,19 @@ int random_start(int lines, int cols, int *x_coord, int*y_coord){
     if (*y_coord>lines/2 && *x_coord<cols/2) {if (random_dir) {return KEY_RIGHT;} else return KEY_UP;};
     if (*y_coord>lines/2 && *x_coord>cols/2) {if (random_dir) {return KEY_LEFT;} else return KEY_UP;};
     return 0;
+}
+// Ian
+// Free all memory that was allocated for the snake body and trophy
+void free_all(struct Node **snake_body, struct Node **trophy){
+    struct Node *current = *snake_body;
+        while (current != NULL){ // traverse
+            struct Node *prev = current;
+            current = current->next;
+            free(prev); 
+        }
+    snake_body = NULL;
+    free(*trophy);
+    *trophy = NULL;
 }
 
 // Top half Ian 
@@ -200,6 +214,8 @@ int main(int ac, char *av[]){
         }
         usleep(sleepy_time-speed_penalty);
     } // end of while loop
+
+    free_all(&snake_body, &trophy);
 
     timeout(10000);
     clear();
