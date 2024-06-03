@@ -90,7 +90,7 @@ bool collision_check(struct Node** snake_body){
     return collision;
 }
 
-// Pick a random start location and move in one of two directions twoards the center
+// Pick a random start location and move in one of two directions towards the center
 int random_start(int lines, int cols, int *x_coord, int*y_coord){
     *y_coord = (rand()%(lines-2))+1;
     *x_coord = (rand()%(cols-2))+1;
@@ -105,7 +105,7 @@ int random_start(int lines, int cols, int *x_coord, int*y_coord){
 // Free all memory that was allocated for the snake body and trophy
 void free_all(struct Node **snake_body, struct Node **trophy){
     struct Node *current = *snake_body;
-        while (current != NULL){ // traverse
+        while (current != NULL){
             struct Node *prev = current;
             current = current->next;
             free(prev); 
@@ -137,20 +137,18 @@ int main(int ac, char *av[]){
     int snake_food = 5;
 	int x_coord;
 	int y_coord;
-    srand(time(0)); // seed the RNG to avoid repetetive sequence
+    srand(time(0)); 
 	int direction = random_start(lines, cols, &x_coord, &y_coord);
     int safe_directions[8] = {'w','a','s','d',KEY_UP,KEY_DOWN,KEY_LEFT,KEY_RIGHT};
     int sleepy_time = 120000;
     int speed_penalty = 0;
     
-    // Draw the snake pit and initialize the snake 
-    // Initial printing now handled by sending print_snake() starting food in while loop
+    // Draw the snake pit and allocate space for the snake 
     border(ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
     struct Node *snake_body = (struct Node*) malloc(sizeof(struct Node)); 
     
     // Make first trophy and track 
     struct Node *trophy = (struct Node*) malloc(sizeof(struct Node)); 
-    //attron(COLOR_PAIR(2)); // Print trophy in RED
     make_new_trophy(lines, cols, &trophy, &snake_body);
     time_t trophy_time, time_passed;
     time(&trophy_time);
@@ -159,19 +157,18 @@ int main(int ac, char *av[]){
     // while (snake head is within bounds of pit), and (win condition has not been reached)
 	while (0<x_coord && x_coord<cols-1 && 0<y_coord && y_coord<lines-1 && snake_food<win_length){
         
-        //attron(COLOR_PAIR(1)); // print snake in GREEN
         print_snake(y_coord, x_coord, &snake_body, &snake_food, &snake_length);
         refresh();
         if (collision_check(&snake_body)) break;
 
         if (snake_body->x==trophy->x && snake_body->y==trophy->y){ // eat trophy
             snake_food += trophy->value;
-            speed_penalty += (trophy->value)*200;
+            speed_penalty += (trophy->value)*300;
             make_new_trophy(lines, cols, &trophy, &snake_body);
             time(&trophy_time);
         }
         time(&time_passed);
-        if (time_passed-trophy_time > (trophy->lifespan)){ // if trophy has expired
+        if (time_passed-trophy_time > (trophy->lifespan)){ // check trophy expiration
             mvaddch(trophy->y, trophy->x, ' ');
             make_new_trophy(lines, cols, &trophy, &snake_body);
             time(&trophy_time);
@@ -188,22 +185,22 @@ int main(int ac, char *av[]){
             case 's': direction = KEY_DOWN;
             case KEY_DOWN:
                 y_coord++;
-                sleepy_time = 180000; // 1.5x sleep (2/3 speed) to compensate for vertical spacing
+                sleepy_time = 165000; // 1.5x sleep (2/3 speed) to compensate for vertical spacing
                 break;
             case 'w': direction = KEY_UP;
 			case KEY_UP:
                 y_coord--;
-                sleepy_time = 180000; // 1.5x sleep (2/3 speed) to compensate for vertical spacing
+                sleepy_time = 165000; // 1.5x sleep (2/3 speed) to compensate for vertical spacing
                 break;
             case 'a': direction = KEY_LEFT;
             case KEY_LEFT:
                 x_coord--;
-                sleepy_time = 120000;
+                sleepy_time = 110000;
                 break;
             case 'd': direction = KEY_RIGHT;
             case KEY_RIGHT:
                 x_coord++;
-                sleepy_time = 120000;
+                sleepy_time = 110000;
                 break;
             case 'k':
                 endwin();
@@ -213,7 +210,7 @@ int main(int ac, char *av[]){
                 break;
         }
         usleep(sleepy_time-speed_penalty);
-    } // end of while loop
+    }
 
     free_all(&snake_body, &trophy);
 
